@@ -19,7 +19,7 @@ import {
     DialogTitle
 } from './ui';
 import { Plus, Search, Filter, Trash2, MoreHorizontal, Package } from 'lucide-react';
-import { TransactionForm } from './TransactionForm';
+import { TransactionFormV2 } from './transaction/TransactionFormV2';
 import { useLanguage } from '../src/contexts/LanguageContext';
 
 export const TransactionList: React.FC = () => {
@@ -165,11 +165,11 @@ export const TransactionList: React.FC = () => {
             </Card>
 
             <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-                <DialogContent className="sm:max-w-[600px]">
+                <DialogContent className="sm:max-w-[800px] max-h-[90vh] overflow-y-auto">
                     <DialogHeader>
                         <DialogTitle>{editingTransaction ? 'Edit Transaction' : t('newTransaction')}</DialogTitle>
                     </DialogHeader>
-                    <TransactionForm
+                    <TransactionFormV2
                         initialData={editingTransaction}
                         onSuccess={() => {
                             setIsModalOpen(false);

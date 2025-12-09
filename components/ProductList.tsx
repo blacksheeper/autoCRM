@@ -17,8 +17,8 @@ import {
     DialogHeader,
     DialogTitle
 } from './ui';
-import { Plus, Search, Filter, MoreHorizontal, ArrowUpDown, Package, Trash2, Upload } from 'lucide-react';
-import { ProductForm } from './ProductForm';
+import { Plus, Search, Filter, MoreHorizontal, ArrowUpDown, Package, Trash2, Upload, Sparkles, Box, Wrench } from 'lucide-react';
+import { ProductFormV2 } from './product';
 import { useLanguage } from '../src/contexts/LanguageContext';
 
 export const ProductList: React.FC = () => {
@@ -78,8 +78,6 @@ export const ProductList: React.FC = () => {
             const lines = text.split('\n');
             const headers = lines[0].split(',').map(h => h.trim().replace(/"/g, ''));
 
-            // Expected headers: Name, Selling Price, Cost Price, Unit, Usage Duration
-
             let successCount = 0;
             let failCount = 0;
 
@@ -116,7 +114,8 @@ export const ProductList: React.FC = () => {
     };
 
     const filteredProducts = products.filter(product =>
-        product.name.toLowerCase().includes(searchTerm.toLowerCase())
+        product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (product.sku && product.sku.toLowerCase().includes(searchTerm.toLowerCase()))
     );
 
     if (loading && products.length === 0) return <div className="p-8 text-center">{t('loadingProducts')}</div>;
@@ -126,7 +125,7 @@ export const ProductList: React.FC = () => {
         <div className="space-y-6">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <div>
-                    <h2 className="text-2xl font-bold tracking-tight text-gray-900">{t('productsTitle')}</h2>
+                    <h2 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">{t('productsTitle')}</h2>
                     <p className="text-sm text-gray-500 mt-1">{t('productsDesc')}</p>
                 </div>
                 <div className="flex gap-2">
@@ -149,7 +148,7 @@ export const ProductList: React.FC = () => {
             </div>
 
             <Card>
-                <CardHeader className="border-b border-gray-100 bg-white/50">
+                <CardHeader className="border-b border-gray-100 dark:border-gray-700 bg-white/50 dark:bg-gray-800/50">
                     <div className="flex items-center gap-4">
                         <div className="relative flex-1 max-w-sm">
                             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
@@ -177,10 +176,10 @@ export const ProductList: React.FC = () => {
                         <TableHeader>
                             <TableRow>
                                 <TableHead>{t('productName')}</TableHead>
+                                <TableHead>ประเภท</TableHead>
                                 <TableHead>{t('sellingPrice')}</TableHead>
                                 <TableHead>{t('costPrice')}</TableHead>
-                                <TableHead>{t('unit')}</TableHead>
-                                <TableHead>{t('usageDuration')}</TableHead>
+                                <TableHead>Service Flow</TableHead>
                                 <TableHead className="w-[100px] text-right">{t('actions')}</TableHead>
                             </TableRow>
                         </TableHeader>
@@ -198,9 +197,39 @@ export const ProductList: React.FC = () => {
                                 filteredProducts.map((product) => (
                                     <TableRow key={product.id}>
                                         <TableCell>
-                                            <div className="font-medium text-gray-900">
-                                                {product.name}
+                                            <div className="flex items-center gap-3">
+                                                {product.image_url ? (
+                                                    <img
+                                                        src={product.image_url}
+                                                        alt={product.name}
+                                                        className="w-10 h-10 rounded-lg object-cover"
+                                                    />
+                                                ) : (
+                                                    <div className="w-10 h-10 rounded-lg bg-gray-100 dark:bg-gray-700 flex items-center justify-center">
+                                                        <Package className="w-5 h-5 text-gray-400" />
+                                                    </div>
+                                                )}
+                                                <div>
+                                                    <div className="font-medium text-gray-900 dark:text-white">
+                                                        {product.name}
+                                                    </div>
+                                                    {product.sku && (
+                                                        <div className="text-xs text-gray-500">{product.sku}</div>
+                                                    )}
+                                                </div>
                                             </div>
+                                        </TableCell>
+                                        <TableCell>
+                                            <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${product.product_type === 'service'
+                                                    ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300'
+                                                    : 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300'
+                                                }`}>
+                                                {product.product_type === 'service' ? (
+                                                    <><Wrench className="w-3 h-3" /> บริการ</>
+                                                ) : (
+                                                    <><Box className="w-3 h-3" /> สินค้า</>
+                                                )}
+                                            </span>
                                         </TableCell>
                                         <TableCell>
                                             ฿{product.selling_price?.toLocaleString()}
@@ -209,10 +238,14 @@ export const ProductList: React.FC = () => {
                                             ฿{product.cost_price?.toLocaleString() ?? '-'}
                                         </TableCell>
                                         <TableCell>
-                                            {product.unit || '-'}
-                                        </TableCell>
-                                        <TableCell>
-                                            {product.usage_duration_days ? `${product.usage_duration_days} days` : '-'}
+                                            {product.has_service_flow ? (
+                                                <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300">
+                                                    <Sparkles className="w-3 h-3" />
+                                                    {product.lifecycle_months} เดือน
+                                                </span>
+                                            ) : (
+                                                <span className="text-gray-400 text-sm">-</span>
+                                            )}
                                         </TableCell>
                                         <TableCell className="text-right">
                                             <div className="flex justify-end gap-1">
@@ -236,16 +269,22 @@ export const ProductList: React.FC = () => {
                 </CardContent>
             </Card>
 
+            {/* Full-screen modal for ProductFormV2 */}
             <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-                <DialogContent className="sm:max-w-[600px]">
-                    <DialogHeader>
-                        <DialogTitle>{editingProduct ? t('editProduct') : t('addNewProduct')}</DialogTitle>
+                <DialogContent className="max-w-6xl h-[90vh] p-0 overflow-hidden">
+                    <DialogHeader className="px-6 py-4 border-b dark:border-gray-700">
+                        <DialogTitle className="flex items-center gap-2">
+                            <Package className="w-5 h-5" />
+                            {editingProduct ? 'แก้ไขสินค้า' : 'เพิ่มสินค้าใหม่'}
+                        </DialogTitle>
                     </DialogHeader>
-                    <ProductForm
-                        initialData={editingProduct}
-                        onSuccess={handleFormSuccess}
-                        onCancel={() => setIsModalOpen(false)}
-                    />
+                    <div className="h-[calc(100%-8rem)] overflow-hidden relative">
+                        <ProductFormV2
+                            initialData={editingProduct}
+                            onSuccess={handleFormSuccess}
+                            onCancel={() => setIsModalOpen(false)}
+                        />
+                    </div>
                 </DialogContent>
             </Dialog>
         </div>

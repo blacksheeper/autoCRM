@@ -71,14 +71,16 @@ export const transactionService = {
 
         if (transError) throw transError;
 
-        // 2. Create Items and Check for Auto-Tasks
+        // 2. Create Items with service flow fields
         if (items.length > 0) {
             const itemsWithTransId = items.map(item => ({
                 transaction_id: transData.id,
                 product_id: item.product_id,
                 quantity: item.quantity,
                 unit_price: item.unit_price,
-                total_price: item.total_price
+                total_price: item.total_price,
+                enable_service_flow: item.enable_service_flow || false,
+                service_start_date: item.service_start_date || null
             }));
 
             const { error: itemsError } = await supabase
